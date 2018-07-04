@@ -28,7 +28,7 @@ def lognormalChabrier2001(m,int=False):
        2012-02-08 - Written - Bovy (IAS)
     """
     if int:
-        if isinstance(m,(long,float)):
+        if isinstance(m,(float)):
             m= [m]
             scalarOut= True
         else:
@@ -59,7 +59,7 @@ def exponentialChabrier2001(m,int=False):
        2012-02-08 - Written - Bovy (IAS)
     """
     if int:
-        if isinstance(m,(long,float)):
+        if isinstance(m,(float)):
             m= [m]
             scalarOut= True
         else:
@@ -90,7 +90,7 @@ def kroupa2003(m,int=False):
        2012-02-08 - Written - Bovy (IAS)
     """
     if int:
-        if isinstance(m,(long,float)):
+        if isinstance(m,(float)):
             m= [m]
             scalarOut= True
         else:
@@ -104,7 +104,7 @@ def kroupa2003(m,int=False):
         elif scalarOut: return out[0]
         else: return out
     else:
-        if isinstance(m,(long,float)):
+        if isinstance(m,(float)):
             if m < 0.08: return (m/0.08)**-0.3
             elif m < 0.5: return (m/0.08)**-1.3
             else: return (m/0.5)**-2.3*(0.5/0.08)**-1.3
@@ -133,7 +133,7 @@ def chabrier2003(m,int=False):
        2012-02-08 - Written - Bovy (IAS)
     """
     if int:
-        if isinstance(m,(long,float)):
+        if isinstance(m,(float)):
             m= [m]
             scalarOut= True
         else:
@@ -147,7 +147,7 @@ def chabrier2003(m,int=False):
         elif scalarOut: return out[0]
         else: return out
     else:
-        if isinstance(m,(long,float)):
+        if isinstance(m,(float)):
             if m < 1.: return 0.158/m*numpy.exp(-(numpy.log10(m)-_LOGMOLOGNORMALCHABRIER2003)**2./2./_S2LOGNORMALCHABRIER2003)/_LOGLN
             else: return m**-2.3*0.158*numpy.exp(-_LOGMOLOGNORMALCHABRIER2003**2./2./_S2LOGNORMALCHABRIER2003)/_LOGLN
         elif isinstance(m,list):

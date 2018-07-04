@@ -1,10 +1,10 @@
 import numpy as nu
 import scipy
-if int(scipy.__version__.split('.')[0]) < 1 \
-        and int(scipy.__version__.split('.')[1]) < 10:
-    from scipy.maxentropy import logsumexp
-else:
+scipyvers = scipy.__version__
+if int(scipyvers.split('.')[1]) > 10 or int(scipyvers.split('.')[0]) >= 1:
     from scipy.misc import logsumexp
+else:
+    from scipy.maxentropy import logsumexp
 from isodist.Isochrone import Isochrone
 from isodist.PadovaIsochrone import PadovaIsochrone
 _LOGTOLN= 1./nu.log10(nu.exp(1.))
@@ -36,7 +36,7 @@ def eval_distpdf(ds,mdict=None,mivardict=None,logg=None,logg_ivar=None,
        feh_ivar= inverse variance of FeH measurement
        afe= observed [\alpha/Fe]
        afe_ivar= [\alpha/Fe] inverse variance
-       padova= if True, use Padova isochrones, 
+       padova= if True, use Padova isochrones,
                if set to a PadovaIsochrone objects, use this
        padova_type= type of PadovaIsochrone to use (e.g., 2mass-spitzer-wise)
        normalize= if True, normalize output PDF (default: False)
@@ -66,7 +66,7 @@ def eval_distpdf(ds,mdict=None,mivardict=None,logg=None,logg_ivar=None,
     #Pre-calculate all absolute magnitudes
     absmagdict= {}
     for key in mdict.keys():
-        absmagdict[key]= -_distmodulus(_ds)+mdict[key]        
+        absmagdict[key]= -_distmodulus(_ds)+mdict[key]
     #loop through isochrones
     ZS= iso.Zs()
     logages= iso.logages()
@@ -78,9 +78,9 @@ def eval_distpdf(ds,mdict=None,mivardict=None,logg=None,logg_ivar=None,
             loglike= nu.zeros((len(_ds),len(thisiso['M_ini'])-1))
             loglike-= nu.log(thisiso['M_ini'][-1])
             for ii in range(1,len(thisiso['M_ini'])-1):
-                if dmpm[ii] > 0.: 
+                if dmpm[ii] > 0.:
                     loglike[:,ii]+= nu.log(dmpm[ii])
-                else: 
+                else:
                     loglike[:,ii]= nu.finfo(nu.dtype(nu.float64)).min
                     continue #no use in continuing here
                 if not teff is None:
