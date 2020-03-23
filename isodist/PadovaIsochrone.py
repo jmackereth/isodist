@@ -1,5 +1,5 @@
 ###############################################################################
-#   PadovaIsochrone: Module that represents isochrones calculated by the 
+#   PadovaIsochrone: Module that represents isochrones calculated by the
 #                    Padova group
 #
 #   Quick start guide
@@ -18,16 +18,16 @@
 #               >>>p.plot(8.,Z=0.02,d1='J-Ks',d2='H')
 #               plots the log_10 age= 8., Z=0.02 isochrone in the J-Ks,H plane
 #
-#   - Defining a new PadovaIsochrone: 1) In $ISODIST_DATA make a new folder 
+#   - Defining a new PadovaIsochrone: 1) In $ISODIST_DATA make a new folder
 #                                        with the name you want (e.g., '2mass')
 #                                     2) put lists of isochrones of a certain Z
-#                                        and age (one file / Z) in this 
-#                                        directory; these files are named 
+#                                        and age (one file / Z) in this
+#                                        directory; these files are named
 #                                        __NAME__-Z-__Z__+.gz
 #                                        e.g.,
 #                                        2mass-Z-0.020.dat.gz
-#                                     3) Edit the __init__ of the 
-#                                        PadovaIsochrone to include this new 
+#                                     3) Edit the __init__ of the
+#                                        PadovaIsochrone to include this new
 #                                        type (optional)
 ###############################################################################
 import sys
@@ -48,7 +48,7 @@ if sys.version_info[0] < 3:
 class PadovaIsochrone (Isochrone):
     """Class that represents a Padova isochrone"""
     def __init__(self,type='2mass-spitzer-wise',Z=None,filters=None,
-                 parsec=False,eta=None):
+                 parsec=False,eta=None, cmd32=False):
         """
         NAME:
            __init__
@@ -59,7 +59,7 @@ class PadovaIsochrone (Isochrone):
            Z= load only this metallicity (can be list)
            filters= list of filters (optional)
            parsec= if True, use new PARSEC isochrones
-           eta= Reimers mass loss efficiency parameter 
+           eta= Reimers mass loss efficiency parameter
                 (default: 0.4 for Padova, 0.2 for PARSEC)
         OUTPUT:
         HISTORY:
@@ -82,9 +82,12 @@ class PadovaIsochrone (Isochrone):
             else:
                 ZS= [Z]
         self.parsec= parsec
+        self.cmd32 = cmd32
         if parsec:
             if eta == 0.2 or eta is None:
                 basename= 'parsec-'+type.lower()
+            elif cmd32:
+                basename= 'parsec1.2-'
             else:
                 basename= 'parsec-%.1f-' % eta +type.lower()
         else:
@@ -93,6 +96,10 @@ class PadovaIsochrone (Isochrone):
             else:
                 raise NotImplementedError('Non-default eta not implemented yet for Padova isochrones')
         for Zm in ZS:
+            if cmd32:
+                dicts.append(read_cmd_isochrone(os.path.join(_DATADIR,
+                                                                basename,
+                                                                basename+'-Z-%5.3f.dat.gz' % Zm)))
             try:
                 dicts.append(read_padova_isochrone(os.path.join(_DATADIR,
                                                                 basename,
@@ -105,12 +112,17 @@ class PadovaIsochrone (Isochrone):
                                                                 basename+'-Z-%5.4f.dat.gz' % Zm),
                                                    filters=filters,
                                                    parsec=parsec))
-                
         self._ZS= nu.array(ZS)
         self._dicts= dicts
         self._filters= filters
         #Gather ages
-        self._logages= nu.array(sorted(list(set(self._dicts[0]['logage']))))
+        if cmd32:
+            self.agekey = 'logAge'
+            self.Minikey = 'Mini'
+        else:
+            self.agekey = 'logage'
+            self.Minikey = 'M_ini'
+        self._logages= nu.array(sorted(list(set(self._dicts[0][self.agekey]))))
         return None
 
     def __call__(self,logage,Z=None,feh=None,afe=None,maxm=None,
@@ -145,9 +157,9 @@ class PadovaIsochrone (Isochrone):
         #round logage
         logage= round(100.*logage)/100.
         if maxm is None:
-            indx= (thisDict['logage'] == logage)
+            indx= (thisDict[self.agekey] == logage)
         else:
-            indx= (thisDict['logage'] == logage)*(thisDict['M_ini'] < maxm)
+            indx= (thisDict[self.agekey] == logage)*(thisDict[self.Minikey] < maxm)
         if not stage is None:
             indx *= (thisDict['stage'] == stage)
         outDict= {}
@@ -251,6 +263,10 @@ def read_padova_isochrone(name,filters=None,parsec=False):
             thismag.append(mags[jj][ii])
         outDict[filters[ii]]= nu.array(thismag)
     return outDict
+
+def read_cmd_isochrone(name,filters=None,parsec=False,cmd32=False):
+    out = nu.genfromtxt(file, dtype=None, names=True, skip_header=11)
+    return out
 
 def padovaTypes():
     return ['2mass-spitzer-wise','sdss-ukidss']

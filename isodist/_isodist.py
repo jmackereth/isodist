@@ -2,7 +2,7 @@ import numpy as nu
 import scipy
 scipyvers = scipy.__version__
 if int(scipyvers.split('.')[1]) > 10 or int(scipyvers.split('.')[0]) >= 1:
-    from scipy.misc import logsumexp
+    from scipy.special import logsumexp
 else:
     from scipy.maxentropy import logsumexp
 from isodist.Isochrone import Isochrone
